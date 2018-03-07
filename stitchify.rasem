@@ -1,0 +1,15 @@
+x = 20
+h = 2 * x #half
+f = 3 * x #full
+l = h + (x / 2) #long
+t = x + (x / 2) #teeny
+
+self.width = 100
+self.height = 100
+line x, x, t, x
+line x, x, x, f
+line x, f, h, f
+line h, f, h, h
+line h, h, x, h
+line t, x, t, h
+
