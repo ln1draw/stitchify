@@ -4,12 +4,16 @@ f = 3 * x #full
 l = h + (x / 2) #long
 t = x + (x / 2) #teeny
 
-self.width = 100
-self.height = 100
-line x, x, t, x
-line x, x, x, f
-line x, f, h, f
-line h, f, h, h
-line h, h, x, h
-line t, x, t, h
+self.width = 1000
+self.height = 1000
 
+
+line 40, 120, 40, 40
+line 40, 80, 80, 80
+line 40, 40, 80, 40
+line 80, 120, 80, 40
+line 160, 120, 160, 40
+line 160, 80, 200, 80
+line 160, 40, 200, 40
+line 200, 120, 200, 40
+     
