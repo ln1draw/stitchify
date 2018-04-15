@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "nokogiri", '1.8.2'
   s.add_dependency "rasem", '0.7.1'
+  s.add_dependency "asciiart", '0.0.9'
 
   s.add_development_dependency "rake"
   s.add_development_dependency "pry"
