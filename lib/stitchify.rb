@@ -1,253 +1,238 @@
-class Stitchify
+class Stitchifier
     require 'nokogiri'
     require 'open-uri'
     require 'pry'
     require 'rasem'
     require 'asciiart'
 
-    def arr_builder(img)
-        AsciiArt.new(img).to_ascii_art.split("\n")
+    attr_accessor :px, :pos_x, :pos_y, :width, :height, :ascii_width
+
+    def initialize(px = 10, ascii_width = 45)
+        self.px = px
+        self.pos_x = 0
+        self.pos_y = 0
+        self.width = 4 * px
+        self.height = 4 * px
+        self.ascii_width = ascii_width
+    end
+
+    def stitch(img, file = 'stitchify.svg')
+        ascii = img_processor(img)
+        arrs = paragraph_builder(ascii)
+        arrs = arrs + grid
+        rasem = arrs_to_rasem(arrs)
+        write(rasem, file)
+        clear_vars
+    end
+
+    def clear_vars
+        pos_x = 0
+        pos_y = 0
+        width = 0
+        height = 0
+    end
+
+    def img_processor(img)
+        AsciiArt.new(img).to_ascii_art(width: ascii_width)
+    end
+
+    def arrs_to_rasem(arrs)
+        Rasem::SVGImage.new(width: self.width, height: self.height) do
+            for line_data in arrs
+                line line_data[0], line_data[1], line_data[2], line_data[3]
+            end
+        end
+    end
+
+    def write(rasem, file)
+        File.open(file, "w") do |f|
+            rasem.write(f)
+        end
+    end
+
+    def grid
+        n = 10
+        output = []
+        (width / n).times do |i|
+            output << [i * n, 0, i * n, height]
+        end
+        (height / n).times do |i|
+            output << [0, i * n, width, i * n]
+        end
+        output
+    end
+
+    def paragraph_builder(str)
+        self.height = 0
+        arr = str.split("\n")
+        output = []
+        arr.each do |line|
+            output = output + line_builder(line)
+            self.pos_y = self.pos_y + (4 * px)
+            self.pos_x = 0
+            self.height = self.height + (4 * px)
+        end
+        output
+    end
+
+    def line_builder(line)
+        self.width = 0
+        line_output = []
+        line.split('').each do |char|
+            line_output = line_output + char_builder(char)
+            self.pos_x = self.pos_x + (4 * px)
+            self.width = self.width + (4 * px)
+        end
+        line_output
     end
 
     def char_builder(char)
         output = []
         case char
         when '.'
-            output << pos_slope_one(15, 35, 10)
-            output << neg_slope_one(15, 25, 10)
+            output << pos_slope_one(1.5 * px, 3.5 * px, px)
+            output << neg_slope_one(1.5 * px, 2.5 * px, px)
         when '~'
-            output << pos_slope_one(5, 25, 10)
-            output << neg_slope_one(15, 15, 10)
-            output << pos_slope_one(25, 25, 10)
+            output << pos_slope_one(px / 2,   2.5 * px, px)
+            output << neg_slope_one(1.5 * px, 1.5 * px, px)
+            output << pos_slope_one(2.5 * px, 2.5 * px, px)
         when ':'
-            output << pos_slope_one(15, 35, 10)
-            output << neg_slope_one(15, 25, 10)
-            output << pos_slope_one(15, 15, 10)
-            output << neg_slope_one(15, 5, 10)
+            output << pos_slope_one(1.5 * px, 3.5 * px, px)
+            output << neg_slope_one(1.5 * px, 2.5 * px, px)
+            output << pos_slope_one(1.5 * px, 1.5 * px, px)
+            output << neg_slope_one(1.5 * px, px / 2,   px)
         when '+'
-            output << vertical_line(25, 5, 30)
-            output << horizontal_line(5, 15, 30)
+            output << vertical_line(2.5 * px, px / 2,   3 * px)
+            output << horizontal_line(px / 2, 1.5 * px, 3 * px)
         when '='
-            output << horizontal_line(5, 15, 30)
-            output << horizontal_line(5, 25, 30)
+            output << horizontal_line(px / 2, 1.5 * px, 3 * px)
+            output << horizontal_line(px / 2, 2.5 * px, 3 * px)
         when 'o'
-            output << pos_slope_one(5, 15, 10)
-            output << horizontal_line(15, 5, 10)
-            output << neg_slope_one(25, 5, 10)
-            output << vertical_line(35, 15, 10)
-            output << pos_slope_one(25, 35, 10)
-            output << horizontal_line(15, 35, 10)
-            output << neg_slope_one(5, 25, 10)
-            output << vertical_line(5, 15, 10)
+            output << pos_slope_one(  px / 2,   1.5 * px, px)
+            output << horizontal_line(1.5 * px, px / 2,   px)
+            output << neg_slope_one(  2.5 * px, px / 2,   px)
+            output << vertical_line(  3.5 * px, 1.5 * px, px)
+            output << pos_slope_one(  2.5 * px, 3.5 * px, px)
+            output << horizontal_line(1.5 * px, 3.5 * px, px)
+            output << neg_slope_one(  px / 2,   2.5 * px, px)
+            output << vertical_line(  px / 2,   1.5 * px, px)
         when '*'
-            output << pos_slope_one(5, 35, 30)
-            output << neg_slope_one(5, 5, 30)
-            output << vertical_line(25, 5, 30)
+            output << pos_slope_one(px / 2,   3.5 * px , 3 * px)
+            output << neg_slope_one(px / 2,   px / 2,    3 * px)
+            output << vertical_line(2.5 * px, px / 2,    3 * px)
         when 'x'
-            output << pos_slope_one(5, 35, 30)
-            output << neg_slope_one(5, 5, 30)
+            output << pos_slope_one(px / 2, 3.5 * px, 3 * px)
+            output << neg_slope_one(px / 2, px / 2,   3 * px)
         when '^'
-            output << pos_slope_one(15, 15, 10)
-            output << neg_slope_one(25, 5, 10)
+            output << pos_slope_one(1.5 * px, 1.5 * px, px)
+            output << neg_slope_one(2.5 * px, px / 2,   px)
         when '%'
-            output << pos_slope_one(5, 15, 10)
-            output << neg_slope_one(5, 5, 10)
-            output << pos_slope_one(5, 35, 30)
-            output << pos_slope_one(25, 35, 10)
-            output << neg_slope_one(25, 25, 10)
+            output << pos_slope_one(px / 2,   1.5 * px, px)
+            output << neg_slope_one(px / 2,   px / 2,   px)
+            output << pos_slope_one(px / 2,   3.5 * px, 3 * px)
+            output << pos_slope_one(2.5 * px, 3.5 * px, px)
+            output << neg_slope_one(2.5 * px, 2.5 * px, px)
         when '#'
-            output << vertical_line(15, 5, 30)
-            output << vertical_line(25, 5, 30)
-            output << horizontal_line(5, 15, 30)
-            output << horizontal_line(5, 25, 30)
+            output << vertical_line(1.5 * px, px / 2,   3 * px)
+            output << vertical_line(2.5 * px, px / 2,   3 * px)
+            output << horizontal_line(px / 2, 1.5 * px, 3 * px)
+            output << horizontal_line(px / 2, 2.5 * px, 3 * px)
         when '@'
-            output << pos_slope_one(25, 25, 10)
-            output << neg_slope_one(25, 15, 10)
-            output << vertical_line(35, 5, 20)
-            output << horizontal_line(15, 5, 20)
-            output << pos_slope_two(5, 25, 10)
-            output << neg_slope_one(5, 25, 10)
-            output << horizontal_line(15, 35, 20)
+            output << pos_slope_one(2.5 * px,   2.5 * px, px)
+            output << neg_slope_one(2.5 * px,   1.5 * px, px)
+            output << vertical_line(3.5 * px,   px / 2,   2 * px)
+            output << horizontal_line(1.5 * px, px / 2,   2 * px)
+            output << pos_slope_two(px / 2,     2.5 * px, px)
+            output << neg_slope_one(px / 2,     2.5 * px, px)
+            output << horizontal_line(1.5 * px, 3.5 * px, 2 * px)
         when '$'
-            output << pos_slope_one(15, 15, 10)
-            output << neg_slope_one(25, 5, 10)
-            output << neg_slope_half(15, 15, 10)
-            output << pos_slope_one(25, 35, 10)
-            output << neg_slope_one(15, 25, 10)
-            output << vertical_line(25, 5, 30)
+            output << pos_slope_one(1.5 * px,  1.5 * px, px)
+            output << neg_slope_one(2.5 * px,  px / 2,   px)
+            output << neg_slope_half(1.5 * px, 1.5 * px, px)
+            output << pos_slope_one(2.5 * px,  3.5 * px, px)
+            output << neg_slope_one(1.5 * px,  2.5 * px, px)
+            output << vertical_line(2.5 * px,  px / 2,   3 * px)
         when 'M'
-            output << vertical_line(15, 5, 30)
-            output << neg_slope_two(15, 5, 10)
-            output << pos_slope_two(25, 25, 10)
-            output << vertical_line(35, 5, 30)
+            output << vertical_line(1.5 * px, px / 2,   3 * px)
+            output << neg_slope_two(1.5 * px, px / 2,   px)
+            output << pos_slope_two(2.5 * px, 2.5 * px, px)
+            output << vertical_line(3.5 * px, px / 2,   3 * px)
         when 'W'
-            output << vertical_line(15, 5, 30)
-            output << pos_slope_two(15, 35, 10)
-            output << neg_slope_two(25, 15, 10)
-            output << vertical_line(35, 5, 30)
+            output << vertical_line(1.5 * px, px / 2,   3 * px)
+            output << pos_slope_two(1.5 * px, 3.5 * px, px)
+            output << neg_slope_two(2.5 * px, 1.5 * px, px)
+            output << vertical_line(3.5 * px, px / 2,   3 * px)
         when '|'
-            output << vertical_line(25, 5, 30)
-        when '_'
-            output << horizontal_line(5, 35, 30)
+            output << vertical_line(2.5 * px, px / 2, 3 * px)
+        when '-'
+            output << horizontal_line(px / 2, 2.5 * px, 3 * px)
         end
         output
     end
 
     def pos_slope_one(startX, startY, length)
-        [startX, startY, startX + length, startY - length]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + length,
+            startY + pos_y - length
+        ]
     end
 
     def neg_slope_one(startX, startY, length)
-        [startX, startY, startX + length, startY + length]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + length,
+            startY + pos_y + length
+        ]
     end
 
     def vertical_line(startX, startY, length)
-        [startX, startY, startX, startY + length]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x,
+            startY + pos_y + length
+        ]
     end
 
     def horizontal_line(startX, startY, length)
-        [startX, startY, startX + length, startY]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + length,
+            startY + pos_y
+        ]
     end
 
     def pos_slope_two(startX, startY, width)
-        [startX, startY, startX + width, startY - (2 * width)]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + width,
+            startY + pos_y - (2 * width)
+        ]
     end
 
     def neg_slope_half(startX, startY, height)
-        [startX, startY, startX + (2 * height), startY + height]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + (2 * height),
+            startY + pos_y + height
+        ]
     end
 
     def neg_slope_two(startX, startY, width)
-        [startX, startY, startX + width, startY + (2 * width)]
+        [
+            startX + pos_x,
+            startY + pos_y,
+            startX + pos_x + width,
+            startY + pos_y + (2 * width)
+        ]
     end
 end
 
- #    attr_accessor :title, :links, :left, :px, :links_array, :left_pos, :width, :height
-
-	# def self.google
- #        self.stitch("http://www.google.com")
-	# end
-
- #    def self.stitch(content)
- #        stitcher = Stitchify.new()
-
- #        doc = stitcher.get_doc(content)
- #        stitcher.title = doc.title
- #        stitcher.links = doc.css('a')
- #        stitcher.px = 40
- #        stitcher.links_array = []
- #        stitcher.left_pos = stitcher.px
- #        stitcher.width = stitcher.px * 10
- #        stitcher.height = stitcher.px * 10
-
- #        stitcher.build_links_array
-
- #        stitcher
- #    end
-
- #    def get_doc(content)
- #        ret = nil
- #        if content.strip[0] == '<'
- #            ret = Nokogiri::HTML(content, nil, 'UTF-8')
- #        else
- #            ret = Nokogiri::HTML(open(content), nil, 'UTF-8')
- #        end
- #        ret
- #    end
-
- #    def build_links_array
- #        self.left_pos
-
- #        px = self.px
- #        left_pos = self.px
- #        bottom_pos = self.px * 3
-
- #        arr = self.links.map{ | x | x.text.strip }
- #        arr.each do |word|
- #            unless word.length == 0
- #                word.split('').each do | letter |
- #                    puts letter
- #                    add_letter(letter, left_pos, bottom_pos)
-
- #                    right_one_px
- #                end
-
- #                right_one_px
- #                right_one_px
- #            end
- #        end
-
- #        self.links_array
- #    end
-
- #    def build_svg
- #        links_array = self.links_array
- #        Rasem::SVGImage.new(width: self.width, height: self.height) do
- #            for line_data in links_array
- #                line line_data[0], line_data[1], line_data[2], line_data[3]
- #            end
- #        end
- #    end
-
- #    def add_letter(letter, left_pos, bottom_pos)
- #        left_pos = self.left_pos
- #        case letter
- #        when ' '
- #            right_one_px
- #        when 'A'
- #            self.links_array << [ left_pos,      bottom_pos,          left_pos,      bottom_pos - 2 * px ]
- #            self.links_array << [ left_pos,      bottom_pos - px,     left_pos + px, bottom_pos - px     ]
- #            self.links_array << [ left_pos,      bottom_pos - 2 * px, left_pos + px, bottom_pos - 2 * px ]
- #            self.links_array << [ left_pos + px, bottom_pos,          left_pos + px, bottom_pos - 2 * px ]
- #        end
- #    end
-
- #    def right_one_px
- #        self.left_pos = self.left_pos + self.px
- #    end
-
- #    def make_img
- #        Rasem::SVGImage.new(width: 400, height: 400) do
-
- #        end
- #    end
-
- #    def write_file
- #        File.open("stitchify.svg", "w") do |f|
- #            self.make_img.write(f)
- #        end
- #    end
-
-
-
-=begin
-
- 
-
-
-
-
-15, 25, 25, 35
-
-
-takes position and letter
-
-
-    img = Rasem::SVGImage.new(:width=>100, :height=>100) do
-2.4.1 :003 >       circle 20, 20, 5
-2.4.1 :004?>     circle 50, 50, 5
-2.4.1 :005?>     line 20, 20, 50, 50
-2.4.1 :006?>   end
-
-2.4.1 :007 > File.open("stitchify.svg", "w") do |f|
-2.4.1 :008 >     img.write(f)
-2.4.1 :009?>   end
-
-def stitch(img)
-    File.open("stitchify.svg", "w") do |f|
-        img.write(f)
-    end
-end
-stitcher.links[5].text
-    
-=end
+s = Stitchifier.new
+s.stitch('../../../Downloads/MYFACE.jpg')
