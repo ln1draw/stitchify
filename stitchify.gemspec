@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'stitchify'
-  s.version = '0.0.9'
+  s.version = '0.1.0'
   s.date = '2018-03-05'
   s.summary = 'converts an HTML document into a cross stitching pattern'
   s.description = 'input an HTML document and output an SVG cross stitching pattern'
@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency "nokogiri", '1.8.2'
   s.add_dependency "rasem", '0.7.1'
   s.add_dependency "asciiart", '0.0.9'
+  s.add_dependency "hex256", '0.0.1'
 
   s.add_development_dependency "rake"
   s.add_development_dependency "pry"
