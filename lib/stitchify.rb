@@ -9,8 +9,6 @@ class Stitchifier
     OPEN_BRACKET = "\e[38;5;"
     CLOSE_BRACKET = "\e[0m"
 
-#     \e[38;5<numberdata tells us colors>m<char>\e[0m
-
     attr_accessor :px, :pos_x, :pos_y, :width, :height, :ascii_width
 
     def initialize(px = 10, ascii_width = nil)
@@ -60,11 +58,11 @@ class Stitchifier
     def arrs_to_rasem(arrs, grid)
         Rasem::SVGImage.new(width: self.width, height: self.height) do
             for line_data in arrs
-                line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>2
+                line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>2, :fill=>line_data[4], :stroke=>line_data[4]
                 # line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>2, :fill=>"red", :stroke=>"red"
             end
             for line_data in grid
-                line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[4]
+                line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
             end
         end
     end
@@ -81,12 +79,12 @@ class Stitchifier
         (width / n).times do |i|
             x = 1
             x = 2 if (i % 10 == 0)
-            output << [i * n, 0, i * n, height, x]
+            output << [i * n, 0, i * n, height, 'black', x]
         end
         (height / n).times do |i|
             x = 1
             x = 2 if i % 10 == 0
-            output << [0, i * n, width, i * n, x]
+            output << [0, i * n, width, i * n, 'black', x]
         end
         output
     end
@@ -136,140 +134,147 @@ class Stitchifier
         output = []
         case char
         when '.'
-            output << pos_slope_one(1.5 * px, 2.5 * px, px)
-            output << neg_slope_one(1.5 * px, 1.5 * px, px)
+            output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
         when '~'
-            output << pos_slope_one((0 - px / 2), 2.5 * px, px)
-            output << neg_slope_one(px / 2,       1.5 * px, px)
-            output << pos_slope_one(1.5 * px,     2.5 * px, px)
+            output << pos_slope_one((0 - px / 2), 2.5 * px, px, hex_str)
+            output << neg_slope_one(px / 2,       1.5 * px, px, hex_str)
+            output << pos_slope_one(1.5 * px,     2.5 * px, px, hex_str)
         when ':'
-            output << pos_slope_one(1.5 * px, 2.5 * px, px)
-            output << neg_slope_one(1.5 * px, 1.5 * px, px)
-            output << pos_slope_one(1.5 * px, 1.5 * px, px)
-            output << neg_slope_one(1.5 * px, px / 2,   px)
+            output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
+            output << pos_slope_one(1.5 * px, 1.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
         when '+'
-            output << vertical_line(1.5 * px, px / 2,   2 * px)
-            output << horizontal_line(px / 2, 1.5 * px, 2 * px)
+            output << vertical_line(1.5 * px, px / 2,   2 * px, hex_str)
+            output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
         when '='
-            output << horizontal_line(px / 2, 1.5 * px, 2 * px)
-            output << horizontal_line(px / 2, 2.5 * px, 2 * px)
+            output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
+            output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
         when 'o'
-            output << pos_slope_one(px / 2,   1.5 * px, px)
-            output << neg_slope_one(1.5 * px, px / 2,   px)
-            output << pos_slope_one(1.5 * px, 2.5 * px, px)
-            output << neg_slope_one(px / 2,   1.5 * px, px)
+            output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
+            output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
+            output << neg_slope_one(px / 2,   1.5 * px, px, hex_str)
         when '*'
-            output << pos_slope_one(px / 2,   2.5 * px , 2 * px)
-            output << neg_slope_one(px / 2,   px / 2,    2 * px)
-            output << vertical_line(1.5 * px, px / 2,    2 * px)
+            output << pos_slope_one(px / 2,   2.5 * px , 2 * px, hex_str)
+            output << neg_slope_one(px / 2,   px / 2,    2 * px, hex_str)
+            output << vertical_line(1.5 * px, px / 2,    2 * px, hex_str)
         when 'x'
-            output << pos_slope_one(px / 2,   2.5 * px , 2 * px)
-            output << neg_slope_one(px / 2,   px / 2,    2 * px)
+            output << pos_slope_one(px / 2,   2.5 * px , 2 * px, hex_str)
+            output << neg_slope_one(px / 2,   px / 2,    2 * px, hex_str)
         when '^'
-            output << pos_slope_one(px / 2,   1.5 * px, px)
-            output << neg_slope_one(1.5 * px, px / 2,   px)
+            output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
         when '%'
-            output << pos_slope_one(px / 2,   1.5 * px, px)
-            output << neg_slope_one(px / 2,   px / 2,   px)
-            output << pos_slope_one(px / 2,   2.5 * px, 2 * px)
-            output << pos_slope_one(1.5 * px, 2.5 * px, px)
-            output << neg_slope_one(1.5 * px, 1.5 * px, px)
+            output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
+            output << neg_slope_one(px / 2,   px / 2,   px, hex_str)
+            output << pos_slope_one(px / 2,   2.5 * px, 2 * px, hex_str)
+            output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
         when '#'
-            output << pos_slope_two(px / 2,   2.5 * px, px)
-            output << pos_slope_two(1.5 * px, 2.5 * px, px)
-            output << horizontal_line(px / 2, 1.5 * px, 2 * px)
-            output << horizontal_line(px / 2, 2.5 * px, 2 * px)
+            output << pos_slope_two(px / 2,   2.5 * px, px, hex_str)
+            output << pos_slope_two(1.5 * px, 2.5 * px, px, hex_str)
+            output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
+            output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
         when '@'
-            output << pos_slope_one(1.5 * px,   2.5 * px, px)
-            output << neg_slope_one(1.5 * px,   1.5 * px, px)
-            output << vertical_line(2.5 * px,   px / 2,   2 * px)
-            output << horizontal_line(1.5 * px, px / 2,   px)
-            output << pos_slope_one(px / 2,     1.5 * px, px)
-            output << neg_slope_one(px / 2,     1.5 * px, px)
-            output << horizontal_line(1.5 * px, 2.5 * px, px)
+            output << pos_slope_one(1.5 * px,   2.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px,   1.5 * px, px, hex_str)
+            output << vertical_line(2.5 * px,   px / 2,   2 * px, hex_str)
+            output << horizontal_line(1.5 * px, px / 2,   px, hex_str)
+            output << pos_slope_one(px / 2,     1.5 * px, px, hex_str)
+            output << neg_slope_one(px / 2,     1.5 * px, px, hex_str)
+            output << horizontal_line(1.5 * px, 2.5 * px, px, hex_str)
         when '$'
-            output << horizontal_line(px / 2, px / 2,   2 * px)
-            output << neg_slope_one(px / 2,   px / 2,   2 * px)
-            output << horizontal_line(px / 2, 2.5 * px, 2 * px)
-            output << vertical_line(1.5 * px, px / 2,   2 * px)
+            output << horizontal_line(px / 2, px / 2,   2 * px, hex_str)
+            output << neg_slope_one(px / 2,   px / 2,   2 * px, hex_str)
+            output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
+            output << vertical_line(1.5 * px, px / 2,   2 * px, hex_str)
         when 'M'
-            output << vertical_line(px / 2,   px / 2,   2 * px)
-            output << neg_slope_one(px / 2,   px / 2,   px)
-            output << pos_slope_one(1.5 * px, 1.5 * px, px)
-            output << vertical_line(2.5 * px, px / 2,   2 * px)
+            output << vertical_line(px / 2,   px / 2,   2 * px, hex_str)
+            output << neg_slope_one(px / 2,   px / 2,   px, hex_str)
+            output << pos_slope_one(1.5 * px, 1.5 * px, px, hex_str)
+            output << vertical_line(2.5 * px, px / 2,   2 * px, hex_str)
         when 'W'
-            output << vertical_line(px / 2,   px / 2,   2 * px)
-            output << pos_slope_one(px / 2,   2.5 * px, px)
-            output << neg_slope_one(1.5 * px, 1.5 * px, px)
-            output << vertical_line(2.5 * px, px / 2,   2 * px)
+            output << vertical_line(px / 2,   px / 2,   2 * px, hex_str)
+            output << pos_slope_one(px / 2,   2.5 * px, px, hex_str)
+            output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
+            output << vertical_line(2.5 * px, px / 2,   2 * px, hex_str)
         when '|'
-            output << vertical_line(2.5 * px, px / 2, 2 * px)
+            output << vertical_line(2.5 * px, px / 2, 2 * px, hex_str)
         when '-'
-            output << horizontal_line(px / 2, 2.5 * px, 2 * px)
+            output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
         end
         output
     end
 
-    def pos_slope_one(startX, startY, length)
+    def pos_slope_one(startX, startY, length, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + length,
-            startY + pos_y - length
+            startY + pos_y - length,
+            hex_str
         ]
     end
 
-    def neg_slope_one(startX, startY, length)
+    def neg_slope_one(startX, startY, length, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + length,
-            startY + pos_y + length
+            startY + pos_y + length,
+            hex_str
         ]
     end
 
-    def vertical_line(startX, startY, length)
+    def vertical_line(startX, startY, length, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x,
-            startY + pos_y + length
+            startY + pos_y + length,
+            hex_str
         ]
     end
 
-    def horizontal_line(startX, startY, length)
+    def horizontal_line(startX, startY, length, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + length,
-            startY + pos_y
+            startY + pos_y,
+            hex_str
         ]
     end
 
-    def pos_slope_two(startX, startY, width)
+    def pos_slope_two(startX, startY, width, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + width,
-            startY + pos_y - (2 * width)
+            startY + pos_y - (2 * width),
+            hex_str
         ]
     end
 
-    def neg_slope_half(startX, startY, height)
+    def neg_slope_half(startX, startY, height, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + (2 * height),
-            startY + pos_y + height
+            startY + pos_y + height,
+            hex_str
         ]
     end
 
-    def neg_slope_two(startX, startY, width)
+    def neg_slope_two(startX, startY, width, hex_str)
         [
             startX + pos_x,
             startY + pos_y,
             startX + pos_x + width,
-            startY + pos_y + (2 * width)
+            startY + pos_y + (2 * width),
+            hex_str
         ]
     end
 end
