@@ -8,8 +8,8 @@ make some great ASCII art cross stitch patterns!
 
 ## Usage
 
-`Stitchifier.new`
-`Stitchifier.stitch('path_to_img', 'svg_output_file')
+`s = Stitchifier.new`
+`s.stitch('path_to_img', 'svg_output_file')
 
 Open the SVG and voila!
 
@@ -18,6 +18,12 @@ Open the SVG and voila!
 You can change the pixel size optionally when you instantiate the Stitchifier
 
 `Stitchifier.new(5)`
+
+or, after the stitchifier is created,
+
+```s = Stitchifier.new`
+s.ascii_width = 50
+s.stitch('../path/to/file')```
 
 You can also change the ASCII width (the number of characters in the ASCII art)
 
