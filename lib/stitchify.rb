@@ -1,287 +1,100 @@
-        class Stitchifier
-            require 'nokogiri'
-            require 'open-uri'
-            require 'pry'
-            require 'rasem'
-            require 'asciiart'
-            require 'hex256'
+class Stitchifier
+    require 'RMagick'
+    require 'chroma'
+    require 'miro'
+    require 'color'
+    require 'pry'
+    include Magick
+    include Chroma
+    include Miro
 
-            OPEN_BRACKET = "\e[38;5;"
-            CLOSE_BRACKET = "\e[0m"
+    HSLA_BLACK = [0, 0, 0, 1]
+    HSLA_WHITE = [0, 0, 100, 1]
+    HSL_OPEN_CONST = "hsl("
 
-            attr_accessor :px, :pos_x, :pos_y, :width, :height, :ascii_width
+    attr_accessor :width, :img_path, :img, :num_of_colors, :dominant_colors, :base_pixel_arr
 
-            def initialize(px = 10, ascii_width = nil)
-                self.px = px
-                self.pos_x = 0
-                self.pos_y = 0
-                self.width = 4 * px
-                self.height = 4 * px
-                self.ascii_width = ascii_width
-            end
+    def initialize(img_path = '', width = 50, num_of_colors = 8)
+        # sets variables
+        set_num_colors(num_of_colors)
+        self.num_of_colors = num_of_colors
+        self.width = width
+        self.num_of_colors = num_of_colors
+        self.img_path = img_path
+        self.dominant_colors = []
 
-            def stitch(img, file = 'stitchify.svg')
-                ascii = img_processor(img)
-                arrs = paragraph_builder(ascii)
-                rasem = arrs_to_rasem(arrs, grid)
-                write(rasem, file)
-                clear_vars
-            end
+        unless img_path.empty?
+            make_img
+            set_dominant_colors
+            build_pixel_array
+            make_pattern
+            make_grid
+        end
+    end
 
-            def stitch_to_output(img)
-                ascii = img_processor(img)
-                arrs = paragraph_builder(ascii)
-                ret = arrs_to_rasem(arrs, grid).to_s
-                clear_vars
-                ret
-            end
+    def make_img
+        self.img = ImageList.new(img_path).quantize.resize_to_fit(width)
+    end
 
-            # ".~:+=o*x^%#@$MW\n .~:+=o*x^%#@$M\nW.~:+=o*x^%  #@$MW"
+    def set_dominant_colors
+        colors = [HSLA_BLACK, HSLA_WHITE]
+        miro_data = Miro::DominantColors.new(self.img_path).to_hex unless self.img_path.empty?
+        miro_data.each{ |x| colors << hex_to_hsla(x) } unless miro_data.nil?
+        self.dominant_colors = colors
+    end
 
-            def stitch_string(str, file = 'stitchify.svg')
-                arrs = paragraph_builder(str)
-                rasem = arrs_to_rasem(arrs, grid)
-                write(rasem, file)
-                clear_vars
-            end
+    def build_pixel_array
+        get_pixels
+        colorize_pixels
+    end
 
-            def clear_vars
-                self.pos_x = 0
-                self.pos_y = 0
-                self.width = 0
-                self.height = 0
-            end
+    def get_pixels
+        px = []
 
-            def ascii_conditions
-                ret = {}
-                ret[:color] = true
-                ret[:width] = self.ascii_width unless self.ascii_width.nil?
-                ret
-            end
-
-            def img_processor(img)
-                AsciiArt.new(img).to_ascii_art(ascii_conditions)
-            end
-
-            def arrs_to_rasem(arrs, grid)
-                Rasem::SVGImage.new(width: self.width, height: self.height) do
-                    for line_data in arrs
-                        line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>2, :fill=>line_data[4], :stroke=>line_data[4]
-                    end
-                    for line_data in grid
-                        line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
-                    end
-                end
-            end
-
-            def write(rasem, file)
-                File.open(file, "w") do |f|
-                    rasem.write(f)
-                end
-            end
-
-            def grid
-                n = 10
-                output = []
-                (width / n).times do |i|
-                    x = 1
-                    x = 2 if (i % 10 == 0)
-                    output << [i * n, 0, i * n, height, 'black', x]
-                end
-                (height / n).times do |i|
-                    x = 1
-                    x = 2 if i % 10 == 0
-                    output << [0, i * n, width, i * n, 'black', x]
-                end
-                output
-            end
-
-            def paragraph_builder(str)
-                self.height = 0
-                arr = str.split("\n")
-                output = []
-                arr.each do |line|
-                    output = output + line_builder(line)
-                    self.pos_y = self.pos_y + (3 * px)
-                    self.pos_x = 0
-                    self.height = self.height + (3 * px)
-                end
-                output
-            end
-
-            def line_builder(line)
-                self.width = 0
-                line_output = []
-
-                l = line.split(OPEN_BRACKET)
-
-                l.each do |segment|
-
-                    char_data = segment.split("m")
-
-                    # if the midpoint doesn't exist
-                    if char_data.length == 1 
-                        char_data[0].chars.each do |char|
-                            line_output = line_output + char_builder(char, '#000000')
-                            self.pos_x = self.pos_x + (2 * px)
-                            self.width = self.width + (2 * px)
-                        end
-                    else
-                        char = char_data[1].delete(CLOSE_BRACKET)
-                        line_output = line_output + char_builder(char, HexConverter.ansi_to_hex(char_data[0]))
-                        self.pos_x = self.pos_x + (2 * px)
-                        self.width = self.width + (2 * px)
-                    end
-                end
-
-                line_output
-            end
-
-            def char_builder(char, hex_str)
-                output = []
-                case char
-                when '.'
-                    output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                when '~'
-                    output << pos_slope_one((0 - px / 2), 2.5 * px, px, hex_str)
-                    output << neg_slope_one(px / 2,       1.5 * px, px, hex_str)
-                    output << pos_slope_one(1.5 * px,     2.5 * px, px, hex_str)
-                when ':'
-                    output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                    output << pos_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
-                when '+'
-                    output << vertical_line(1.5 * px, px / 2,   2 * px, hex_str)
-                    output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
-                when '='
-                    output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
-                    output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
-                when 'o'
-                    output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
-                    output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
-                    output << neg_slope_one(px / 2,   1.5 * px, px, hex_str)
-                when '*'
-                    output << pos_slope_one(px / 2,   2.5 * px , 2 * px, hex_str)
-                    output << neg_slope_one(px / 2,   px / 2,    2 * px, hex_str)
-                    output << vertical_line(1.5 * px, px / 2,    2 * px, hex_str)
-                when 'x'
-                    output << pos_slope_one(px / 2,   2.5 * px , 2 * px, hex_str)
-                    output << neg_slope_one(px / 2,   px / 2,    2 * px, hex_str)
-                when '^'
-                    output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, px / 2,   px, hex_str)
-                when '%'
-                    output << pos_slope_one(px / 2,   1.5 * px, px, hex_str)
-                    output << neg_slope_one(px / 2,   px / 2,   px, hex_str)
-                    output << pos_slope_one(px / 2,   2.5 * px, 2 * px, hex_str)
-                    output << pos_slope_one(1.5 * px, 2.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                when '#'
-                    output << pos_slope_two(px / 2,   2.5 * px, px, hex_str)
-                    output << pos_slope_two(1.5 * px, 2.5 * px, px, hex_str)
-                    output << horizontal_line(px / 2, 1.5 * px, 2 * px, hex_str)
-                    output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
-                when '@'
-                    output << pos_slope_one(1.5 * px,   2.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px,   1.5 * px, px, hex_str)
-                    output << vertical_line(2.5 * px,   px / 2,   2 * px, hex_str)
-                    output << horizontal_line(1.5 * px, px / 2,   px, hex_str)
-                    output << pos_slope_one(px / 2,     1.5 * px, px, hex_str)
-                    output << neg_slope_one(px / 2,     1.5 * px, px, hex_str)
-                    output << horizontal_line(1.5 * px, 2.5 * px, px, hex_str)
-                when '$'
-                    output << horizontal_line(px / 2, px / 2,   2 * px, hex_str)
-                    output << neg_slope_one(px / 2,   px / 2,   2 * px, hex_str)
-                    output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
-                    output << vertical_line(1.5 * px, px / 2,   2 * px, hex_str)
-                when 'M'
-                    output << vertical_line(px / 2,   px / 2,   2 * px, hex_str)
-                    output << neg_slope_one(px / 2,   px / 2,   px, hex_str)
-                    output << pos_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                    output << vertical_line(2.5 * px, px / 2,   2 * px, hex_str)
-                when 'W'
-                    output << vertical_line(px / 2,   px / 2,   2 * px, hex_str)
-                    output << pos_slope_one(px / 2,   2.5 * px, px, hex_str)
-                    output << neg_slope_one(1.5 * px, 1.5 * px, px, hex_str)
-                    output << vertical_line(2.5 * px, px / 2,   2 * px, hex_str)
-                when '|'
-                    output << vertical_line(2.5 * px, px / 2, 2 * px, hex_str)
-                when '-'
-                    output << horizontal_line(px / 2, 2.5 * px, 2 * px, hex_str)
-                end
-                output
-            end
-
-            def pos_slope_one(startX, startY, length, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + length,
-                    startY + pos_y - length,
-                    hex_str
-                ]
-            end
-
-            def neg_slope_one(startX, startY, length, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + length,
-                    startY + pos_y + length,
-                    hex_str
-                ]
-            end
-
-            def vertical_line(startX, startY, length, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x,
-                    startY + pos_y + length,
-                    hex_str
-                ]
-            end
-
-            def horizontal_line(startX, startY, length, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + length,
-                    startY + pos_y,
-                    hex_str
-                ]
-            end
-
-            def pos_slope_two(startX, startY, width, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + width,
-                    startY + pos_y - (2 * width),
-                    hex_str
-                ]
-            end
-
-            def neg_slope_half(startX, startY, height, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + (2 * height),
-                    startY + pos_y + height,
-                    hex_str
-                ]
-            end
-
-            def neg_slope_two(startX, startY, width, hex_str)
-                [
-                    startX + pos_x,
-                    startY + pos_y,
-                    startX + pos_x + width,
-                    startY + pos_y + (2 * width),
-                    hex_str
-                ]
+        unless self.img.nil?
+            self.img.each_pixel do | pixel, col, row |
+                px << pixel.to_hsla
             end
         end
+        self.base_pixel_arr = px
+        px
+    end
+
+    def colorize_pixels
+        self.base_pixel_arr.each do |hash|
+
+        end
+        # compare each pixel with the dominant colors map plus black and white
+        # build new array of pixels using one of the colors indicated in comparison above (most similar to dominant colors)
+    end
+
+    def colorize_pixel(px_data)
+        # binding.pry
+    end
+
+    def hex_to_hsla(str)
+        color_str = Color.new(str).to_hsl
+        color_str.slice!(HSL_OPEN_CONST)
+        color_str.slice!("%)")
+        color_str.slice!('%')
+        color_arr = color_str.split(', ')
+
+        [color_arr[0].to_i, color_arr[1].to_i, color_arr[2].to_i, 1]
+    end
+
+    def make_grid
+        # builds cross stitch grid
+    end
+
+    def make_pattern
+        # builds cross stitch pattern
+    end
+
+    def set_num_colors(num)
+        Miro.options[:color_count] = num
+    end
+
+    def view_miro_opts
+        Miro.options
+    end
+end
