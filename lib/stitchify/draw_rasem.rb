@@ -46,5 +46,3 @@ class DrawRasem
         end
     end
 end
-
-s = Stitchifier.new(URL, 30, 5)

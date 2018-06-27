@@ -21,6 +21,7 @@ class Stitchifier
                   :img,
                   :img_path,
                   :num_of_colors,
+                  :num_of_off_colors,
                   :pos_x,
                   :pos_y,
                   :px,
@@ -29,8 +30,8 @@ class Stitchifier
 
     def initialize(img_path = '', width = 50, px=10, num_of_colors = 8)
         # sets variables
-        set_num_colors(num_of_colors)
         self.num_of_colors = num_of_colors
+        set_num_colors
         self.width = width
         self.num_of_colors = num_of_colors
         self.img_path = img_path
@@ -48,14 +49,20 @@ class Stitchifier
     end
 
     def make_img
-        self.img = ImageList.new(img_path).quantize.resize_to_fit(width)
+        self.img = ImageList.new(img_path).resize_to_fit(width)
     end
 
     def set_dominant_colors
         colors = [HSLA_BLACK, HSLA_WHITE]
-        miro_data = Miro::DominantColors.new(self.img_path).to_hex unless self.img_path.empty?
-        miro_data.each{ |x| colors << hex_to_hsla(x) } unless miro_data.nil?
-        self.dominant_colors = colors
+        set_num_colors
+        if self.num_of_colors > 3 && !img_path.empty?
+            miro_data = Miro::DominantColors.new(self.img_path).to_hex unless self.img_path.empty?
+            main_color = miro_data[0]
+            miro_data.each{ |x| colors << hex_to_hsla(x) } unless miro_data.nil?
+            off_colors = build_off_color_arr(main_color)
+            off_colors.each { |x| colors << hsla_to_hsla_arr(x) }
+        end
+        self.dominant_colors = colors.uniq
     end
 
     def build_pixel_array
@@ -110,6 +117,10 @@ class Stitchifier
 
     def hex_to_hsla(str)
         color_str = Chroma::Color.new(str).to_hsl
+        hsla_to_hsla_arr(color_str)
+    end
+
+    def hsla_to_hsla_arr(color_str)
         color_str.slice!(HSL_OPEN_CONST)
         color_str.slice!("%)")
         color_str.slice!('%')
@@ -131,8 +142,46 @@ class Stitchifier
         Chroma::Color.new(str).to_hex
     end
 
-    def set_num_colors(num)
-        Miro.options[:color_count] = num
+    def set_num_colors
+        num = self.num_of_colors - 2
+        case num
+        when 1
+            set_miro(1, 0)
+        when 2
+            set_miro(1, 1)
+        when 3
+            set_miro(2, 1)
+        when 4
+            set_miro(2, 2)
+        when 5
+            set_miro(3, 2)
+        when 6
+            set_miro(3, 3)
+        else
+            set_miro(num - 3, 3)
+        end 
+    end
+
+    def set_miro(cc, off_c)
+        Miro.options[:color_count] = cc
+        self.num_of_off_colors = off_c
+    end
+
+    def build_off_color_arr(color)
+        if !!color
+            c = Chroma::Color.new(color)
+            palette = c.palette
+            case self.num_of_off_colors
+            when 0
+                []
+            when 1
+                palette.complement(as: :hsl)
+            when 2
+                palette.triad(as: :hsl)
+            when 3
+                palette.tetrad(as: :hsl)
+            end
+        end
     end
 
     def view_miro_opts
