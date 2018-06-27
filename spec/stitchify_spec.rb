@@ -75,7 +75,14 @@ describe "Stitchifier" do
         it 'takes a specific pixel and returns its closest match from the dominant colors' do
             s = Stitchifier.new(URL, 30, 5)
             px = s.get_pixels[0]
-            expect(s.colorize_pixel(px)).to eq('foo')
+            expect(s.colorize_pixel(px)).to eq([22, 45, 32, 1])
+        end
+    end
+
+    describe 'colorize_pixels' do
+        it 'colorizes all of the pixels' do
+            s = Stitchifier.new(URL, 30, 5)
+            expect(s.colorize_pixels).to eq('foo')
         end
     end
 end
