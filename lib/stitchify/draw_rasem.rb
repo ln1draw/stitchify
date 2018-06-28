@@ -1,6 +1,4 @@
 class DrawRasem
-    require 'rasem'
-    # require 'pixelfy'
 
     attr_accessor :px_arr, :width, :px, :pos_x, :pos_y, :height
 
@@ -96,5 +94,3 @@ class DrawRasem
         end
     end
 end
-
-s = Stitchifier.new('http://www.ellenwondra.com/MYFACE.jpg', 30, 6, 10)

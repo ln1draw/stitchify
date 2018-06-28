@@ -5,8 +5,8 @@ require 'pry'
 require 'rasem'
 require 'RMagick'
 
-require 'stitchify/draw_rasem'
-require 'stitchify/pixelfy'
+require 'stitchify/draw_rasem.rb'
+require 'stitchify/pixelfy.rb'
 
 class Stitchifier
     include Chroma
