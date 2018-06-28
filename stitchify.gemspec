@@ -1,13 +1,13 @@
 Gem::Specification.new do |s|
   s.name = 'stitchify'
-  s.version = '0.2.4'
+  s.version = '0.2.5'
   s.date = '2018-06-23'
   s.summary = 'converts an image into a cross stitching pattern'
   s.description = 'ultimate goal is to input an HTML document and output an SVG cross stitching pattern'
   s.authors = ['Ellen Wondra']
   s.email = 'ellenfromillinois@gmail.com'
   s.files = ['lib/stitchify.rb', 'lib/stitchify/pixelfy.rb', 'lib/stitchify/draw_rasem.rb']
-  s.homepage = 'http://rubygems.org/gems/stitchify'
+  s.homepage = 'https://github.com/ln1draw/stitchify'
   s.license = 'MIT'
 
   s.add_dependency "rasem", '0.7.1'
