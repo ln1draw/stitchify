@@ -51,22 +51,7 @@ describe "Stitchifier" do
 
         it 'provides color codes' do
             s = Stitchifier.new(URL, 30, 5)
-            expect(s.get_pixels[0]).to eq([50.674846625766875, 85.23239917976731, 246.46108949416342, 1.0])
-        end
-    end
-
-    describe 'hex_to_hsla' do
-        it 'returns an expected array of hsla data' do
-            s = Stitchifier.new(URL, 30, 5)
-            expect(s.hex_to_hsla('#ffffff')).to eq([0, 0, 100, 1])
-        end
-    end
-
-    describe 'colorize_pixel' do
-        it 'takes a specific pixel and returns its closest match from the dominant colors' do
-            s = Stitchifier.new(URL, 30, 5)
-            px = s.get_pixels[0]
-            expect(s.colorize_pixel(px)).to eq("#76482d")
+            expect(s.get_pixels[0].class).to eq(Pixelfy)
         end
     end
 

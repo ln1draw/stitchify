@@ -1,10 +1,11 @@
 class DrawRasem
     require 'rasem'
+    # require 'pixelfy'
 
-    attr_accessor :hex_arr, :width, :px, :pos_x, :pos_y, :height
+    attr_accessor :px_arr, :width, :px, :pos_x, :pos_y, :height
 
-    def initialize(hex_arr, width=50, px=10)
-        self.hex_arr = hex_arr
+    def initialize(px_arr, width=50, px=10)
+        self.px_arr = px_arr
         self.width = width
         self.px = px
         clear_vars
@@ -30,8 +31,8 @@ class DrawRasem
         rasem_obj = self
 
         Rasem::SVGImage.new(width: 1000000000, height: 100000000) do
-            for hex_data in rasem_obj.hex_arr
-                circle rasem_obj.pos_x, rasem_obj.pos_y, rasem_obj.px / 2, fill: hex_data
+            for pixel in rasem_obj.px_arr
+                rectangle rasem_obj.pos_x, rasem_obj.pos_y, rasem_obj.px, rasem_obj.px, fill: pixel.hex
                 rasem_obj.update_positions
             end
         end
@@ -46,3 +47,5 @@ class DrawRasem
         end
     end
 end
+
+s = Stitchifier.new('http://www.ellenwondra.com/MYFACE.jpg', 30, 5, 10)
