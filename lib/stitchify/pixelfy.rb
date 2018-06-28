@@ -2,14 +2,15 @@ class Pixelfy
   require 'chroma'
   include Chroma
 
-  attr_accessor :hue, :saturation, :lightness
+  attr_accessor :hue, :saturation, :lightness, :shape
 
   HSL_OPEN_CONST = "hsl("
 
-  def initialize(hue, saturation, lightness)
+  def initialize(hue, saturation, lightness, shape=nil)
     self.hue = hue
     self.saturation = saturation
     self.lightness = lightness
+    self.shape = shape
   end
 
   def self.from_hex(hex_str)
@@ -63,6 +64,7 @@ class Pixelfy
     self.hue = closest_px.hue
     self.saturation = closest_px.saturation
     self.lightness = closest_px.lightness
+    self.shape = closest_px.shape
 
     self
   end

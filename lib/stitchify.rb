@@ -16,6 +16,15 @@ class Stitchifier
     HSLA_BLACK = [0, 0, 0, 1]
     HSLA_WHITE = [0, 0, 100, 1]
     HSL_OPEN_CONST = "hsl("
+    FILLABLE_SHAPES = [
+        'sm_rectangle',
+        'triangle',
+        'circle',
+        'diamond',
+        'reverse_triangle',
+        'left_triangle',
+        'right_triangle'
+    ]
 
     attr_accessor :base_pixel_arr,
                   :dominant_colors,
@@ -44,6 +53,7 @@ class Stitchifier
             make_img
             set_dominant_colors
             build_pixel_array
+
             d = DrawRasem.new(self.stitch_map, self.width, self.px)
             d.stitch
         end
@@ -54,6 +64,7 @@ class Stitchifier
     end
 
     def set_dominant_colors
+        color_pos = 0
         colors = black_and_white
         set_num_colors
         if self.num_of_colors > 3 && !img_path.empty?
@@ -63,11 +74,17 @@ class Stitchifier
             off_colors = build_off_color_arr(main_color)
             colors = miro_px + off_colors + colors
         end
+        colors.each do |px|
+            if px.shape.nil?
+                px.shape = FILLABLE_SHAPES[color_pos]
+                color_pos = (color_pos + 1) % FILLABLE_SHAPES.length
+            end
+        end
         self.dominant_colors = colors.uniq
     end
 
     def black_and_white
-        [Pixelfy.new(0, 0, 0), Pixelfy.new(0, 0, 100)]
+        [Pixelfy.new(0, 0, 0, 'x'), Pixelfy.new(0, 0, 100, 'circle')]
     end
 
     def build_pixel_array
