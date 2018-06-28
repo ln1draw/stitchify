@@ -43,6 +43,24 @@ describe "Stitchifier" do
         end
     end
 
+    describe 'build_color_set' do
+        it 'sets color_set to dominant colors when nothing else is specified' do
+            s = Stitchifier.new(URL, 30, 5, 4)
+            s.build_color_set
+            hex_map = s.color_set.map{ |x| x.hex }
+
+            expect(hex_map).to eq(["#432b23", "#233b43", "#000000", "#ffffff"])
+        end
+
+        it 'sets color_set to dominant colors plus color set when passed color set params' do 
+            s = Stitchifier.new(URL, 30, 5, 4)
+            s.build_color_set(['#00ff00'])
+            hex_map = s.color_set.map{ |x| x.hex }
+
+            expect(hex_map.sort).to eq(["#00ff00", "#233b43", "#000000", "#ffffff"].sort)
+        end
+    end
+
     describe 'get_pixels' do
         it 'gets an array of pixel data' do
             s = Stitchifier.new(URL, 30, 5)
@@ -54,27 +72,4 @@ describe "Stitchifier" do
             expect(s.get_pixels[0].class).to eq(Pixelfy)
         end
     end
-
-    describe 'colorize_pixels' do
-        it 'colorizes all of the pixels' do
-            s = Stitchifier.new(URL, 30, 5)
-            # expect(s.colorize_pixels).to eq('foo')
-        end
-    end
 end
-
-
-#     def make_grid
-#         # builds cross stitch grid
-#     end
-
-#     def make_pattern
-#         # builds cross stitch pattern
-#     end
-
-# img_to_stitchify = cat.quantize(num_of_colors).resize_to_fit(width)
-# img_to_stitchify.display
-# colors = []
-# img_to_stitchify.each_pixel do | pixel, col, row |
-#   colors << Chroma.paint("hsla(#{pixel.to_hsla.to_s[1..-2]})")
-# end

@@ -27,6 +27,7 @@ class Stitchifier
     ]
 
     attr_accessor :base_pixel_arr,
+                  :color_set,
                   :dominant_colors,
                   :img,
                   :img_path,
@@ -48,10 +49,11 @@ class Stitchifier
         self.dominant_colors = []
         self.stitch_map = []
         self.px = px
+        self.color_set = nil
 
         unless img_path.empty?
             make_img
-            set_dominant_colors
+            build_color_set
             build_pixel_array
 
             d = DrawRasem.new(self.stitch_map, self.width, self.px)
@@ -83,6 +85,18 @@ class Stitchifier
         self.dominant_colors = colors.uniq
     end
 
+    def build_color_set(req_colors = [])
+        if req_colors.length == 0
+            set_dominant_colors
+            self.color_set = self.dominant_colors
+        else
+            set_dominant_colors
+            colors = self.dominant_colors
+            colors.slice!(0, req_colors.length)
+            self.color_set = colors + req_colors.map{ |x| Pixelfy.from_hex(x) }
+        end
+    end
+
     def black_and_white
         [Pixelfy.new(0, 0, 0, 'x'), Pixelfy.new(0, 0, 100, 'circle')]
     end
@@ -105,7 +119,7 @@ class Stitchifier
     end
 
     def colorize_pixels
-        self.base_pixel_arr.each {|px| self.stitch_map << px.colorize(self.dominant_colors) }
+        self.base_pixel_arr.each {|px| self.stitch_map << px.colorize(self.color_set) }
     end
 
     def set_num_colors
