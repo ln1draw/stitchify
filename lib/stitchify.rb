@@ -70,7 +70,6 @@ class Stitchifier
     end
 
     def set_dominant_colors
-        color_pos = 0
         colors = black_and_white
         set_num_colors
         if self.num_of_colors > 3 && !img_path.empty?
@@ -80,13 +79,18 @@ class Stitchifier
             off_colors = build_off_color_arr(main_color)
             colors = miro_px + off_colors + colors
         end
+        set_px_shapes(colors)
+        self.dominant_colors = colors.uniq
+    end
+
+    def set_px_shapes(colors)
+        color_pos = 0
         colors.each do |px|
             if px.shape.nil?
                 px.shape = FILLABLE_SHAPES[color_pos]
                 color_pos = (color_pos + 1) % FILLABLE_SHAPES.length
             end
         end
-        self.dominant_colors = colors.uniq
     end
 
     def build_color_set(req_colors = [])
@@ -97,7 +101,8 @@ class Stitchifier
             set_dominant_colors
             colors = self.dominant_colors
             colors.slice!(0, req_colors.length)
-            self.color_set = colors + req_colors.map{ |x| Pixelfy.from_hex(x) }
+            color_map = colors + req_colors.map{ |x| Pixelfy.from_hex(x) }
+            self.color_set = set_px_shapes(color_map)
         end
         build_pixel_array
     end
