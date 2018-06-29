@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'stitchify'
-  s.version = '0.2.5'
+  s.version = '0.2.6'
   s.date = '2018-06-23'
   s.summary = 'converts an image into a cross stitching pattern'
   s.description = 'ultimate goal is to input an HTML document and output an SVG cross stitching pattern'

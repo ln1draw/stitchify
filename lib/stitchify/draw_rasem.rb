@@ -2,10 +2,11 @@ class DrawRasem
 
     attr_accessor :px_arr, :width, :px, :pos_x, :pos_y, :height
 
-    def initialize(px_arr, width=50, px=10)
+    def initialize(px_arr, width=50, px=10, color_set=[])
         self.px_arr = px_arr
         self.width = width
         self.px = px
+        self.color_set = color_set
         clear_vars
     end
 

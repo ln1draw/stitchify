@@ -56,9 +56,13 @@ class Stitchifier
             build_color_set
             build_pixel_array
 
-            d = DrawRasem.new(self.stitch_map, self.width, self.px)
-            d.stitch
+            stitch
         end
+    end
+
+    def stitch
+        d = DrawRasem.new(self.stitch_map, self.width, self.px, self.color_set)
+        d.stitch
     end
 
     def make_img
@@ -95,6 +99,7 @@ class Stitchifier
             colors.slice!(0, req_colors.length)
             self.color_set = colors + req_colors.map{ |x| Pixelfy.from_hex(x) }
         end
+        build_pixel_array
     end
 
     def black_and_white
@@ -119,6 +124,7 @@ class Stitchifier
     end
 
     def colorize_pixels
+        self.stitch_map = []
         self.base_pixel_arr.each {|px| self.stitch_map << px.colorize(self.color_set) }
     end
 

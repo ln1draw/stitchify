@@ -45,7 +45,7 @@ describe "Stitchifier" do
 
     describe 'build_color_set' do
         it 'sets color_set to dominant colors when nothing else is specified' do
-            s = Stitchifier.new(URL, 30, 5, 4)
+            s = Stitchifier.new(URL, 30, 10, 4)
             s.build_color_set
             hex_map = s.color_set.map{ |x| x.hex }
 
@@ -53,11 +53,19 @@ describe "Stitchifier" do
         end
 
         it 'sets color_set to dominant colors plus color set when passed color set params' do 
-            s = Stitchifier.new(URL, 30, 5, 4)
+            s = Stitchifier.new(URL, 30, 10, 4)
             s.build_color_set(['#00ff00'])
             hex_map = s.color_set.map{ |x| x.hex }
 
             expect(hex_map.sort).to eq(["#00ff00", "#233b43", "#000000", "#ffffff"].sort)
+        end
+
+        it 'can handle full color set' do
+            s = Stitchifier.new(URL, 30, 10, 4)
+            s.build_color_set(['#ff0000', '#ffdd00', '#2b8109', '#006aff'])
+            hex_map = s.color_set.map{ |x| x.hex }
+
+            expect(hex_map.sort).to eq(['#ff0000', '#ffdd00', '#2b8109', '#006aff'].sort)
         end
     end
 
