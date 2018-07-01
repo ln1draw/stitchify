@@ -38,47 +38,64 @@ class DrawRasem
                 end
             end
 
-            for pixel in rasem_obj.px_arr
-                pos_x = rasem_obj.pos_x
-                pos_y = rasem_obj.pos_y
-                px = rasem_obj.px
-                a = px / 4
-                b = px / 2
-                c = px - a
-                d = a / 2
+            pos_x = rasem_obj.pos_x
+            pos_y = rasem_obj.pos_y
+            px = rasem_obj.px
+            a = px / 4
+            b = px / 2
+            c = px - a
+            d = a / 2
 
-                case pixel.shape
-                when 'rectangle'
-                    rectangle pos_x, pos_y, px, px, fill: pixel.hex
-                when 'x'
+            defs do
+                group(id: 'rectangle') do
+                    rectangle pos_x, pos_y, px, px
+                end
+
+                group(id: 'x') do
                     line pos_x, pos_y, pos_x + px, pos_y + px
                     line pos_x, pos_y + px, pos_x + px, pos_y
-                when 'circle'
-                    circle (pos_x + b), (pos_y + b), a + d, fill: pixel.hex
-                when 'sm_rectangle'
-                    rectangle pos_x + a + 1, pos_y + a + 1, b, b, fill: pixel.hex
-                when 'triangle'
+                end
+
+                group(id: 'circle') do
+                    circle (pos_x + b), (pos_y + b), a + d
+                end
+
+                group(id: 'sm_rectangle') do
+                    rectangle pos_x + a + 1, pos_y + a + 1, b, b
+                end
+
+                group(id: 'triangle') do
                     polygon [pos_x + b, pos_y + a], 
                             [pos_x + c, pos_y + c],
-                            [pos_x + a, pos_y + c], fill: pixel.hex
-                when 'diamond'
+                            [pos_x + a, pos_y + c]
+                end
+
+                group(id: 'diamond') do
                     polygon [pos_x + b,      pos_y + 1], 
                             [pos_x + 1,      pos_y + b], 
                             [pos_x + b,      pos_y + px - 1], 
-                            [pos_x + px - 1, pos_y + b], fill: pixel.hex
-                when 'reverse_triangle'
+                            [pos_x + px - 1, pos_y + b]
+                end
+
+                group(id: 'reverse_triangle') do
                     polygon [pos_x + a, pos_y + a], 
                             [pos_x + c, pos_y + a], 
-                            [pos_x + b, pos_y + c], fill: pixel.hex
-                when 'left_triangle'
+                            [pos_x + b, pos_y + c]
+                end
+
+                group(id: 'left_triangle') do
                     polygon [pos_x + a, pos_y + b],
                             [pos_x + c, pos_y + a],
-                            [pos_x + c, pos_y + c], fill: pixel.hex
-                when 'right_triangle'
+                            [pos_x + c, pos_y + c]
+                end
+
+                group(id: 'right_triangle') do
                     polygon [pos_x + a, pos_y + a],
                             [pos_x + c, pos_y + b],
-                            [pos_x + a, pos_y + c] , fill: pixel.hex
-                when 'star'
+                            [pos_x + a, pos_y + c]
+                end
+
+                group(id: 'star') do
                     polygon [pos_x + a + 1,  pos_y + 1], 
                             [pos_x + b,      pos_y + a + 1],
                             [pos_x + c - 1,  pos_y + 1],
@@ -95,8 +112,10 @@ class DrawRasem
                             [pos_x + a + 1,  pos_y + b],
                             [pos_x + 1,      pos_y + a + 1],
                             [pos_x + a + 1,  pos_y + a + 1],
-                            [pos_x + a + 1,  pos_y + 1], fill: pixel.hex
-                when 'heart'
+                            [pos_x + a + 1,  pos_y + 1]
+                end
+
+                group(id: 'heart') do
                     polygon [pos_x + a, pos_y + a],
                             [pos_x + b - d, pos_y + a],
                             [pos_x + b, pos_y + b - d],
@@ -104,19 +123,25 @@ class DrawRasem
                             [pos_x + c, pos_y + a],
                             [pos_x + c, pos_y + b],
                             [pos_x + b, pos_y + c],
-                            [pos_x + a, pos_y + b], fill: pixel.hex
-                else
-                    rectangle pos_x, pos_y, px, px, fill: pixel.hex
+                            [pos_x + a, pos_y + b]
                 end
+            end
 
+            for pixel in rasem_obj.px_arr
+                use(pixel.shape, x: rasem_obj.pos_x - px, y: rasem_obj.pos_y - px, fill: pixel.hex)
                 rasem_obj.update_positions
             end
 
             group stroke: 'black' do
                 legend_pos_x = (rasem_obj.width + 2) * px
                 legend_pos_y = 2 * px
-                legend_height = px * rasem_obj.color_set.length
-                rectangle legend_pos_x, legend_pos_y, 10 + px, legend_height, fill: 'white'
+                legend_height = px * (rasem_obj.color_set.length * 2)
+                rectangle legend_pos_x, legend_pos_y, 10 * px, legend_height, fill: 'white'
+                rasem_obj.color_set.each_with_index do |pixel, index|
+                    use(pixel.shape, x: legend_pos_x - b, y: legend_pos_y - b, fill: pixel.hex)
+                    text(legend_pos_x + 2 * px, legend_pos_y + px + b) { raw pixel.hex }
+                    legend_pos_y += 2 * px
+                end
             end
         end
     end
