@@ -31,13 +31,6 @@ class DrawRasem
         rasem_obj = self
 
         Rasem::SVGImage.new(width: 1000000000, height: 100000000) do
-
-            group stroke: 'black' do
-                for line_data in rasem_obj.grid
-                    line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
-                end
-            end
-
             pos_x = rasem_obj.pos_x
             pos_y = rasem_obj.pos_y
             px = rasem_obj.px
@@ -127,11 +120,26 @@ class DrawRasem
                 end
             end
 
+            # grid
+            group stroke: 'black' do
+                for line_data in rasem_obj.grid
+                    line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
+                end
+
+                blocks = rasem_obj.width / 10
+                blocks.times do |i|
+                    text((i + 1) * 10 * px + b, c, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 5 }
+                    text(1, (i + 1) * 10 * px + px + a, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 5 }
+                end
+            end
+
+            # content
             for pixel in rasem_obj.px_arr
                 use(pixel.shape, x: rasem_obj.pos_x - px, y: rasem_obj.pos_y - px, fill: pixel.hex)
                 rasem_obj.update_positions
             end
 
+            # legend
             group stroke: 'black' do
                 legend_pos_x = (rasem_obj.width + 2) * px
                 legend_pos_y = 2 * px

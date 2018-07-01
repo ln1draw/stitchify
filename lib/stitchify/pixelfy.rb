@@ -39,6 +39,13 @@ class Pixelfy
     "#{HSL_OPEN_CONST} #{self.hue}, #{self.saturation}%, #{self.lightness}%, 1)"
   end
 
+  def name
+    n = ''
+    c = Chroma::Color.new(hsl).to_name
+    n = c unless c == "<unknown>"
+
+  end
+
   def colorize(map)
     deltae = 100000000000
     closest_px = map[0]
