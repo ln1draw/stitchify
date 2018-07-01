@@ -13,9 +13,9 @@ Gem::Specification.new do |s|
   s.add_dependency "rasem", '0.7.1'
   s.add_dependency "miro", '0.4.0'
   s.add_dependency "color", '1.8'
-  s.add_dependency "chroma"
-  s.add_dependency "rmagick"
+  s.add_dependency "chroma", '0.2.0'
+  s.add_dependency "rmagick", '2.16'
 
-  s.add_development_dependency "rake"
-  s.add_development_dependency "pry"
+  s.add_development_dependency "rake", '12.3.1'
+  s.add_development_dependency "pry", '0.11.3'
 end

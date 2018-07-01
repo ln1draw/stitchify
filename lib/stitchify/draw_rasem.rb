@@ -32,14 +32,20 @@ class DrawRasem
 
         Rasem::SVGImage.new(width: 1000000000, height: 100000000) do
 
-            for line_data in rasem_obj.grid
-                line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
+            group stroke: 'black' do
+                for line_data in rasem_obj.grid
+                    line line_data[0], line_data[1], line_data[2], line_data[3], :stroke_width=>line_data[5]
+                end
             end
 
             for pixel in rasem_obj.px_arr
                 pos_x = rasem_obj.pos_x
                 pos_y = rasem_obj.pos_y
                 px = rasem_obj.px
+                a = px / 4
+                b = px / 2
+                c = px - a
+                d = a / 2
 
                 case pixel.shape
                 when 'rectangle'
@@ -48,24 +54,69 @@ class DrawRasem
                     line pos_x, pos_y, pos_x + px, pos_y + px
                     line pos_x, pos_y + px, pos_x + px, pos_y
                 when 'circle'
-                    circle (pos_x + px/2), (pos_y + px/2), px / 2 - 1, fill: pixel.hex
+                    circle (pos_x + b), (pos_y + b), a + d, fill: pixel.hex
                 when 'sm_rectangle'
-                    rectangle pos_x + 1, pos_y + 1, px - 2, px - 2, fill: pixel.hex
+                    rectangle pos_x + a + 1, pos_y + a + 1, b, b, fill: pixel.hex
                 when 'triangle'
-                    polygon [pos_x + px/2, pos_y + 1], [pos_x + 1, pos_y + px - 1], [pos_x + px - 1, pos_y + px - 1], fill: pixel.hex
+                    polygon [pos_x + b, pos_y + a], 
+                            [pos_x + c, pos_y + c],
+                            [pos_x + a, pos_y + c], fill: pixel.hex
                 when 'diamond'
-                    polygon [pos_x + px/2, pos_y + 1], [pos_x + 1, pos_y + px/2], [pos_x + px/2, pos_y + px - 1], [pos_x + px - 1, pos_y + px/2], fill: pixel.hex
+                    polygon [pos_x + b,      pos_y + 1], 
+                            [pos_x + 1,      pos_y + b], 
+                            [pos_x + b,      pos_y + px - 1], 
+                            [pos_x + px - 1, pos_y + b], fill: pixel.hex
                 when 'reverse_triangle'
-                    polygon [pos_x + px/2, pos_y + px - 1], [pos_x + 1, pos_y + 1], [pos_x + px - 1, pos_y + 1], fill: pixel.hex
+                    polygon [pos_x + a, pos_y + a], 
+                            [pos_x + c, pos_y + a], 
+                            [pos_x + b, pos_y + c], fill: pixel.hex
                 when 'left_triangle'
-                    polygon [pos_x + 1, pos_y + px/2], [pos_x + px - 1, pos_y + 1], [pos_x + px - 1, pos_y + px - 1], fill: pixel.hex
+                    polygon [pos_x + a, pos_y + b],
+                            [pos_x + c, pos_y + a],
+                            [pos_x + c, pos_y + c], fill: pixel.hex
                 when 'right_triangle'
-                    polygon [pos_x + px - 1, pos_y + px/2], [pos_x + 1, pos_y + 1], [pos_x + 1, pos_y + px - 1], fill: pixel.hex
+                    polygon [pos_x + a, pos_y + a],
+                            [pos_x + c, pos_y + b],
+                            [pos_x + a, pos_y + c] , fill: pixel.hex
+                when 'star'
+                    polygon [pos_x + a + 1,  pos_y + 1], 
+                            [pos_x + b,      pos_y + a + 1],
+                            [pos_x + c - 1,  pos_y + 1],
+                            [pos_x + c - 1,  pos_y + a + 1],
+                            [pos_x + px - 1, pos_y + a + 1],
+                            [pos_x + c - 1,  pos_y + b],
+                            [pos_x + px - 1, pos_y + c - 1],
+                            [pos_x + c - 1,  pos_y + c - 1],
+                            [pos_x + c - 1,  pos_y + px - 1],
+                            [pos_x + b,      pos_y + c - 1],
+                            [pos_x + a + 1,  pos_y + px - 1],
+                            [pos_x + a + 1,  pos_y + c - 1],
+                            [pos_x + 1,      pos_y + c - 1],
+                            [pos_x + a + 1,  pos_y + b],
+                            [pos_x + 1,      pos_y + a + 1],
+                            [pos_x + a + 1,  pos_y + a + 1],
+                            [pos_x + a + 1,  pos_y + 1], fill: pixel.hex
+                when 'heart'
+                    polygon [pos_x + a, pos_y + a],
+                            [pos_x + b - d, pos_y + a],
+                            [pos_x + b, pos_y + b - d],
+                            [pos_x + b + d, pos_y + a],
+                            [pos_x + c, pos_y + a],
+                            [pos_x + c, pos_y + b],
+                            [pos_x + b, pos_y + c],
+                            [pos_x + a, pos_y + b], fill: pixel.hex
                 else
                     rectangle pos_x, pos_y, px, px, fill: pixel.hex
                 end
 
                 rasem_obj.update_positions
+            end
+
+            group stroke: 'black' do
+                legend_pos_x = (rasem_obj.width + 2) * px
+                legend_pos_y = 2 * px
+                legend_height = px * rasem_obj.color_set.length
+                rectangle legend_pos_x, legend_pos_y, 10 + px, legend_height, fill: 'white'
             end
         end
     end

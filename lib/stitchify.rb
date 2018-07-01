@@ -21,6 +21,8 @@ class Stitchifier
         'triangle',
         'circle',
         'diamond',
+        'heart',
+        'star',
         'reverse_triangle',
         'left_triangle',
         'right_triangle'
