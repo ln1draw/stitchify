@@ -110,7 +110,7 @@ class Stitchifier
     end
 
     def black_and_white
-        [Pixelfy.new(0, 0, 0, 'circle'), Pixelfy.new(0, 0, 100, 'x')]
+        [Pixelfy.new(0, 0, 0, 'x'), Pixelfy.new(0, 0, 100, 'circle')]
     end
 
     def build_pixel_array
