@@ -51,21 +51,12 @@ class Pixelfy
     closest_px = map[0]
 
     map.each do |dom_px|
-      hue_delta = (dom_px.hue - self.hue).abs
-
-      if hue_delta < deltae
-
-        deltae = hue_delta
-        closest_px = dom_px
-
-      elsif hue_delta == deltae
-        dom_px_delta = self.get_full_delta(dom_px)
-        current_px_delta = self.get_full_delta(closest_px)
-        if dom_px_delta < current_px_delta
-            deltae = hue_delta
-            closest_px = dom_px
-        end
-      end 
+      dom_px_delta = self.get_delta_e(dom_px)
+      current_px_delta = self.get_delta_e(closest_px)
+      if dom_px_delta < current_px_delta
+          deltae = dom_px_delta
+          closest_px = dom_px
+      end
     end
 
     self.hue = closest_px.hue
@@ -76,7 +67,7 @@ class Pixelfy
     self
   end
 
-  def get_full_delta(px)
+  def get_delta_e(px)
     hue_delta = (px.hue - self.hue).abs
     sat_delta = (px.saturation - self.saturation).abs
     lit_delta = (px.lightness - self.lightness).abs
