@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version = '0.2.9'
   s.date = '2018-06-23'
   s.summary = 'converts an image into a cross stitching pattern'
-  s.description = 'ultimate goal is to input an HTML document and output an SVG cross stitching pattern'
+  s.description = 'takes a .jpg image and converts it to an SVG cross stitching pattern. You can change the colors, the width, and the number of colors used.'
   s.authors = ['Ellen Wondra']
   s.email = 'ellenfromillinois@gmail.com'
   s.files = ['lib/stitchify.rb', 'lib/stitchify/pixelfy.rb', 'lib/stitchify/draw_rasem.rb']
