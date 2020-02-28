@@ -1,6 +1,6 @@
 # Stitchify
 
-## Getting Started
+## Quick Start
 
 `gem install stitchify`
 
@@ -8,7 +8,7 @@
 
 this will create stitchify.svg if it does not already exist and populate it with svg data. To see the image, open this file.
 
-# About this gem
+## About this gem
 
 This is my first gem, and my first bit of structural design!
 
@@ -20,7 +20,7 @@ This project inspired my Strange Loop talk, [Complexities of Color in Computing.
 
 Your Stitchifier object has four initial variables, each of which has a starting value; they are, in order, image pate, width (aka number of squares), pixel size, and number of colors.
 
-You can initialize your Stitchifier object with s = Stitchifier.new("http://www.ellenwondra.com/gothprincess.jpg", 75, 10, 15) and the Stitchifier will build an svg for you that you can open in your root directory.
+You can initialize your Stitchifier object with `s = Stitchifier.new("http://www.ellenwondra.com/gothprincess.jpg", 75, 10, 15)` and the Stitchifier will build an svg for you that you can open in your root directory.
 
 You can also play with the color set and make other modifications. At this particular point in time, that requires cracking the Stitchifier object open to access internal objects, instead of requesting access to services. So much to refactor, so little time!
 
