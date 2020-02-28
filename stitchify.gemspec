@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'stitchify'
   s.version = '0.2.9'
-  s.date = '2018-06-23'
+  s.date = '2020-02-27'
   s.summary = 'converts an image into a cross stitching pattern'
   s.description = 'takes a .jpg image and converts it to an SVG cross stitching pattern. You can change the colors, the width, and the number of colors used.'
   s.authors = ['Ellen Wondra']
