@@ -1,17 +1,25 @@
 class DrawRasem
 
-    attr_accessor :px_arr, :width, :px, :pos_x, :pos_y, :height, :color_set
+    attr_accessor   :color_set,
+                    :file_path,
+                    :height,
+                    :pos_x,
+                    :pos_y, 
+                    :px,
+                    :px_arr,
+                    :width
 
-    def initialize(px_arr, width=50, px=10, color_set=[])
+    def initialize(px_arr, width=50, px=10, color_set=[], file_path='stitchify.svg')
         self.px_arr = px_arr
         self.width = width
         self.px = px
         self.color_set = color_set
+        self.file_path = file_path
         clear_vars
     end
 
     def stitch
-        write(build_rasem_data, file='stitchify.svg')
+        write(build_rasem_data, self.file_path)
         clear_vars
     end
 
@@ -128,8 +136,8 @@ class DrawRasem
 
                 blocks = rasem_obj.width / 10
                 blocks.times do |i|
-                    text((i + 1) * 10 * px + b, c, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 5 }
-                    text(1, (i + 1) * 10 * px + px + a, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 5 }
+                    text((i + 1) * 10 * px + b, c, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 10 }
+                    text(1, (i + 1) * 10 * px + px + a, stroke_width: 1, 'font-size': '8px', class: 'grid-numbers') { raw (i + 1) * 10 }
                 end
             end
 

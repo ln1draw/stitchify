@@ -33,6 +33,7 @@ class Stitchifier
                   :dominant_colors,
                   :img,
                   :img_path,
+                  :file_path,
                   :num_of_colors,
                   :num_of_off_colors,
                   :pos_x,
@@ -41,7 +42,7 @@ class Stitchifier
                   :stitch_map,
                   :width
 
-    def initialize(img_path = '', width = 50, px=10, num_of_colors = 8)
+    def initialize(img_path = '', width = 50, px=10, num_of_colors=8, file_path='stitchify.svg')
         # sets variables
         self.num_of_colors = num_of_colors
         set_num_colors
@@ -52,6 +53,7 @@ class Stitchifier
         self.stitch_map = []
         self.px = px
         self.color_set = nil
+        self.file_path = file_path
 
         unless img_path.empty?
             make_img
@@ -63,7 +65,7 @@ class Stitchifier
     end
 
     def stitch
-        d = DrawRasem.new(self.stitch_map, self.width, self.px, self.color_set)
+        d = DrawRasem.new(self.stitch_map, self.width, self.px, self.color_set, self.file_path)
         d.stitch
     end
 
