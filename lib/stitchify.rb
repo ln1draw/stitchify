@@ -1,9 +1,8 @@
 require 'chroma'
 require 'color'
 require 'miro'
-require 'pry'
 require 'rasem'
-require 'RMagick'
+require 'rmagick'
 
 require 'stitchify/draw_rasem.rb'
 require 'stitchify/pixelfy.rb'
